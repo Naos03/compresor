@@ -118,21 +118,29 @@ def compresor(file):
     my_dict_str=my_dict_str.replace(" ", "")
     writeInBinary(encodedOutput, my_dict_str)
 
-def writeInBinary(bits,str):
+def writeInBinary(bits,st):
     # Open the file for writing in binary mode
     with open('comprimido.elmejorprofesor', 'wb') as file:
         # Convert the bit string to bytes
         data = int(bits, 2).to_bytes((len(bits) + 7) // 8, byteorder='big')
         # Write the bytes to the file
+        #print(bits)
+        l=(8-len(bits)%8)
+        if(l==8):
+            l=0
+
         #print(data)
         file.write(data)
     file.close()
     with open('comprimido.elmejorprofesor', 'a') as file:    
-        file.write(str)
+        file.write(st)
+        file.write(str(l))
     file.close()
 
 def bytes_to_binary_string(byte_string):
-    binary_string = bin(int.from_bytes(byte_string, byteorder='big'))[2:]
+    hex_string=byte_string.hex()
+    int_value = int(hex_string, 16) 
+    binary_string = bin(int_value)[2:].zfill(len(hex_string)*4)
     return binary_string    
 
 def descompresor(file):
@@ -144,14 +152,19 @@ def descompresor(file):
         print("Could not find '{' character in the file.")
     else:
         huffman_encoding = contents[:idx]
-        symbol_dict_str = contents[idx:]
-        #print(huffman_encoding)
-        
+        symbol_dict_str = contents[idx:-1]
+        l=(contents[-1])
+        l=chr(l)
+        l=int(l)
+        #print(l)
     # Convierte los bytes en una cadena de texto
-    symbol_dict_str = symbol_dict_str.decode('utf-8')
+    symbol_dict_str = symbol_dict_str.decode()
+    #print(len(huffman_encoding))
     import ast
     the_symbols = ast.literal_eval(symbol_dict_str)
     huffman_encoding=bytes_to_binary_string(huffman_encoding)
+    huffman_encoding=huffman_encoding[l:]
+    #print(len(huffman_encoding))
     #print(huffman_encoding)
     the_symbols_key=the_symbols.keys()
     # converting symbols and probabilities into huffman tree nodes
@@ -180,7 +193,7 @@ def descompresor(file):
 
     # Decodifica los bits utilizando el árbol de decodificación
     decoded_output = HuffmanDecoding(huffman_encoding, the_nodes[0])
-    #print(decoded_output)    
+    #print(decoded_output)   
     # Escribe el resultado decodificado en un archivo
     fragmentos=[]
     for i in range(0, len(decoded_output), 3):
@@ -190,12 +203,12 @@ def descompresor(file):
         fragmentos.append(hex_num)
     string = ''.join([fragmento for fragmento in fragmentos])
     bytes_data = bytes.fromhex(string)
-        #print(data)
+    
         
     with open('descomprimido-elmejorprofesor.txt', mode='wb') as f:
         f.write(bytes_data)
 
-    #print('Archivo descomprimido exitosamente!')
+    print('Archivo descomprimido exitosamente!')
 
 def HuffmanDecoding(encodedData, huffmanTree):  
     treeHead = huffmanTree  
