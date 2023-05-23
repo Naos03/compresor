@@ -27,7 +27,6 @@ def separador(text, words,m):
     ah=[]
     for grupo in grupos:
         cadena = ''.join(grupo)
-        print(cadena)
         ah.append(cadena)
     return ah
 
@@ -35,7 +34,6 @@ def obtener_columna(lista, indice_columna):
     columna = []
     for fila in lista:
         if indice_columna < len(fila):
-            #print(fila[indice_columna])
             columna.append(fila[indice_columna])
     return columna
 
@@ -87,16 +85,13 @@ if(rank==0):
 
         Node.heapq.heappush(the_nodes, newNode)
     he = Node.CalculateCodes(the_nodes[0])
-    #print(the_symbols)
     min_values=claves_menores(the_symbols,size-1)
-    #print(min_values)
+
     columna = obtener_columna(min_values, 0)
     listtemp = []
     for item in columna:
         if (item in he):
-            print(item)
             listtemp.append(he[item])
-    print(listtemp)
     resultado=separador(huffman_encoding,listtemp,size-1)
     iu=[]
 
