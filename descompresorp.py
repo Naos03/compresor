@@ -11,22 +11,25 @@ def claves_menores(diccionario,k):
     valores_mas_pequenos = Node.heapq.nsmallest(k, diccionario.items(), key=lambda x: x[1])
     return valores_mas_pequenos
 
-def separador(oracion,palabras,k):
-    partes = re.split(f'({"|".join(map(re.escape, palabras))})', oracion)
-    partes_limpio = [parte.strip() for parte in partes if parte.strip()]
-    z=len(partes_limpio)/k
-    pl2=[]
-    ts=''
-    j=0
-    x=z
-    for i in range (z):
-        if(j<x):
-            ts=ts+partes_limpio[i]
+def separador(text, words,m):
+    pattern = r'({})'.format('|'.join(map(re.escape, words)))
+    parts = re.split(pattern, text)
+    parts_clean = [part.strip() for part in parts if part.strip()]
+    pares = []
+    for i in range(0, len(parts_clean), 2):
+        if i + 1 < len(parts_clean):
+            par = parts_clean[i] + parts_clean[i + 1]
+            pares.append(par)
         else:
-            x=x+z
-            pl2.append(ts)
-            ts=''     
-    return pl2
+            pares.append(parts_clean[i])
+    a=len(pares)//m+1
+    grupos = [pares[i:i+a] for i in range(0, len(pares), a)]
+    ah=[]
+    for grupo in grupos:
+        cadena = ''.join(grupo)
+        print(cadena)
+        ah.append(cadena)
+    return ah
 
 def obtener_columna(lista, indice_columna):
     columna = []
