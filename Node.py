@@ -15,7 +15,7 @@ class Nodes:
         # the tree direction (0 or 1)  
         self.code = ''
     def __lt__(self, other):
-        return self.probability < other.probability
+        return self.probability < other.probability 
 
     def __eq__(self, other):
         if isinstance(other, Nodes):
@@ -113,7 +113,7 @@ def compresor(file):
     the_nodes=HuffmanEncoding(the_symbols)
     huffmanEncoding = CalculateCodes(the_nodes)
     encodedOutput = OutputEncoded(the_data,huffmanEncoding)  
-    #print(encodedOutput)
+    #print(huffmanEncoding)
     my_dict_str = str(the_symbols)
     my_dict_str=my_dict_str.replace(" ", "")
     writeInBinary(encodedOutput, my_dict_str)
@@ -128,11 +128,28 @@ def writeInBinary(bits,st):
         l=(8-len(bits)%8)
         if(l==8):
             l=0
-
         #print(data)
         file.write(data)
     file.close()
     with open('comprimido.elmejorprofesor', 'a') as file:    
+        file.write(st)
+        file.write(str(l))
+    file.close()
+
+def writeInBinaryP(bits,st):
+    # Open the file for writing in binary mode
+    with open('comprimido.elmejorprofesorP', 'wb') as file:
+        # Convert the bit string to bytes
+        data = int(bits, 2).to_bytes((len(bits) + 7) // 8, byteorder='big')
+        # Write the bytes to the file
+        #print(bits)
+        l=(8-len(bits)%8)
+        if(l==8):
+            l=0
+        #print(data)
+        file.write(data)
+    file.close()
+    with open('comprimido.elmejorprofesorP', 'a') as file:    
         file.write(st)
         file.write(str(l))
     file.close()
@@ -207,8 +224,7 @@ def descompresor(file):
         
     with open('descomprimido-elmejorprofesor.txt', mode='wb') as f:
         f.write(bytes_data)
-
-    print('Archivo descomprimido exitosamente!')
+    f.close()
 
 def HuffmanDecoding(encodedData, huffmanTree):  
     treeHead = huffmanTree  

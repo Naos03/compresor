@@ -16,4 +16,4 @@ end_time = time.time()
 
 elapsed_time = end_time - start_time
 
-print(f"El tiempo de ejecución fue de {elapsed_time:.6f} segundos")
+print(elapsed_time)
