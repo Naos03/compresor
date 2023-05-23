@@ -2,7 +2,7 @@ import Node
 import sys
 import re
 from mpi4py import MPI
-
+import time
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
@@ -11,10 +11,22 @@ def claves_menores(diccionario,k):
     valores_mas_pequenos = Node.heapq.nsmallest(k, diccionario.items(), key=lambda x: x[1])
     return valores_mas_pequenos
 
-def separador(oracion,palabras):
+def separador(oracion,palabras,k):
     partes = re.split(f'({"|".join(map(re.escape, palabras))})', oracion)
     partes_limpio = [parte.strip() for parte in partes if parte.strip()]
-    return partes_limpio
+    z=len(partes_limpio)/k
+    pl2=[]
+    ts=''
+    j=0
+    x=z
+    for i in range (z):
+        if(j<x):
+            ts=ts+partes_limpio[i]
+        else:
+            x=x+z
+            pl2.append(ts)
+            ts=''     
+    return pl2
 
 def obtener_columna(lista, indice_columna):
     columna = []
@@ -25,7 +37,7 @@ def obtener_columna(lista, indice_columna):
     return columna
 
 if(rank==0):
-
+    start_time = time.time()
     # Leer argumento
     if len(sys.argv) > 1:
         file = (sys.argv[1])
@@ -71,65 +83,51 @@ if(rank==0):
         newNode = Node.Nodes(left.probability + right.probability, left.symbol + right.symbol, left, right)
 
         Node.heapq.heappush(the_nodes, newNode)
-    huffmanEncoding = Node.CalculateCodes(the_nodes[0])
+    he = Node.CalculateCodes(the_nodes[0])
     #print(the_symbols)
     min_values=claves_menores(the_symbols,size-1)
-    print(min_values)
+    #print(min_values)
     columna = obtener_columna(min_values, 0)
     listtemp = []
     for item in columna:
-        if (item in huffmanEncoding):
+        if (item in he):
             print(item)
-            listtemp.append(huffmanEncoding[item])
+            listtemp.append(he[item])
     print(listtemp)
-    resultado=separador(huffman_encoding,listtemp)
-    #for parte in resultado:
-    #    print(parte)
-    j=0
-    b={}
-    for a in range(1,size-1):
-        comm.send(the_nodes[0],dest=a,tag=0)
-        comm.send(resultado[j],dest=a,tag=j)
-        j=j+1
-    while(j<len(resultado)):
-        status = MPI.Status()
-        message_exists = comm.Iprobe(source=MPI.ANY_SOURCE, status=status)
-        if(message_exists):
-            source=status.Get_source()
-            data=comm.recv(source=source)
-            b[status.Get_tag()]=data
-            comm.send(resultado[j],dest=status.Get_source(),tag=status.Get_tag())
-            j=j+1
-    for a in range(1,size-1):        
-        comm.send('end',dest=a,tag=-1)
-    diccionario_ordenado = dict(sorted(b.items(), key=lambda x: x[0]))
-    cadena = ''.join([f" {valor}" for clave, valor in diccionario_ordenado.items()] )
-    print(cadena)
+    resultado=separador(huffman_encoding,listtemp,size-1)
+    iu=[]
 
+    b={}
+    decoded_output=[]
+
+    for i in range(1,size-1):
+        comm.ssend(the_nodes[0],dest=i,tag=0)
+        comm.send(resultado[i],dest=i,tag=1)
+    for i in range(1,size-1):
+        decoded_output.append(comm.recv(source=i,tag=2))
+    decoded_output=''.join(decoded_output)
+    fragmentos=[]
+    for i in range(0, len(decoded_output), 3):
+        fragmento = decoded_output[i:i+3]
+        hex_num = format((int(fragmento)),'x')
+        hex_num=hex_num.zfill(2)  
+        fragmentos.append(hex_num)
+    string = ''.join([fragmento for fragmento in fragmentos])
+    bytes_data = bytes.fromhex(string)
+    with open('descomprimidop-elmejorprofesor.txt', mode='wb') as f:
+        f.write(bytes_data)
+    f.close()
+    end_time = time.time()
+
+    elapsed_time = end_time - start_time
+
+    print(elapsed_time)
 else:
     
     tabla=comm.recv(source=0,tag=0)
-    status = MPI.Status()
-    message_exists = comm.Iprobe(source=MPI.ANY_SOURCE, status=status)
-    if(message_exists):
-        source=status.Get_source()
-        tag=status.Get_tag()
-        while(tag!=-1):
-            if(tag!=0):
-                if(message_exists):
-                    source=status.Get_source()
-                    tag=status.Get_tag()
-                    data=comm.recv(source=0)
-                    decoded_output = Node.HuffmanDecoding(data, tabla)
-                    fragmentos=[]
-                    for i in range(0, len(decoded_output), 3):
-                        fragmento = decoded_output[i:i+3]
-                        hex_num = format((int(fragmento)),'x')
-                        hex_num=hex_num.zfill(2)  
-                        fragmentos.append(hex_num)
-                    string = ''.join([fragmento for fragmento in fragmentos])
-                    bytes_data = bytes.fromhex(string)
-                    comm.send(bytes_data, dest=0,tag=tag)
+    data=comm.recv(source=0,tag=1)
+    decodif= Node.HuffmanDecoding(data,tabla)
+    comm.send(decodif,dest=0,tag=2)
                         
 
 
