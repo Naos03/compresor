@@ -138,7 +138,7 @@ def writeInBinary(bits,st):
 
 def writeInBinaryP(bits,st):
     # Open the file for writing in binary mode
-    with open('comprimido.elmejorprofesorP', 'wb') as file:
+    with open('comprimidop.elmejorprofesor', 'wb') as file:
         # Convert the bit string to bytes
         data = int(bits, 2).to_bytes((len(bits) + 7) // 8, byteorder='big')
         # Write the bytes to the file
@@ -149,7 +149,7 @@ def writeInBinaryP(bits,st):
         #print(data)
         file.write(data)
     file.close()
-    with open('comprimido.elmejorprofesorP', 'a') as file:    
+    with open('comprimidop.elmejorprofesor', 'a') as file:    
         file.write(st)
         file.write(str(l))
     file.close()
