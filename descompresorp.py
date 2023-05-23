@@ -23,7 +23,10 @@ def separador(text, words,m):
         else:
             pares.append(parts_clean[i])
     a=len(pares)//m+1
-    grupos = [pares[i:i+a] for i in range(0, len(pares), a)]
+    if(len(pares)!=a):
+        grupos = [pares[i:i+a] for i in range(0, len(pares), a)]
+    else:
+        grupos=pares
     ah=[]
     for grupo in grupos:
         cadena = ''.join(grupo)
@@ -96,7 +99,6 @@ if(rank==0):
 
     b={}
     decoded_output=[]
-
     for i in range(1,size):
         comm.send(the_nodes[0],dest=i,tag=0)
     for i in range (1,size):
