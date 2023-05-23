@@ -86,7 +86,6 @@ if(rank==0):
         Node.heapq.heappush(the_nodes, newNode)
     he = Node.CalculateCodes(the_nodes[0])
     min_values=claves_menores(the_symbols,size-1)
-
     columna = obtener_columna(min_values, 0)
     listtemp = []
     for item in columna:
@@ -98,15 +97,16 @@ if(rank==0):
     b={}
     decoded_output=[]
 
-    for i in range(1,size-1):
-        comm.ssend(the_nodes[0],dest=i,tag=0)
-        comm.send(resultado[i],dest=i,tag=1)
-    for i in range(1,size-1):
+    for i in range(1,size):
+        comm.send(the_nodes[0],dest=i,tag=0)
+    for i in range (1,size):
+        comm.send(resultado[i-1],dest=i,tag=1)
+    for i in range(1,size):
         decoded_output.append(comm.recv(source=i,tag=2))
-    decoded_output=''.join(decoded_output)
+    deco=''.join(decoded_output)
     fragmentos=[]
-    for i in range(0, len(decoded_output), 3):
-        fragmento = decoded_output[i:i+3]
+    for i in range(0, len(deco), 3):
+        fragmento = deco[i:i+3]
         hex_num = format((int(fragmento)),'x')
         hex_num=hex_num.zfill(2)  
         fragmentos.append(hex_num)
@@ -121,7 +121,6 @@ if(rank==0):
 
     print(elapsed_time)
 else:
-    
     tabla=comm.recv(source=0,tag=0)
     data=comm.recv(source=0,tag=1)
     decodif= Node.HuffmanDecoding(data,tabla)
