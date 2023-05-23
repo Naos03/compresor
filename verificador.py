@@ -1,15 +1,19 @@
-import os
+import sys
 
-def compare_files(archivo1, archivo2):
-    tamano_archivo1 = os.path.getsize(archivo1)
-    tamano_archivo2 = os.path.getsize(archivo2)
 
-    if tamano_archivo1 < tamano_archivo2:
-        print(f"El archivo '{archivo1}' es más pequeño que el archivo '{archivo2}'")
-    elif tamano_archivo1 > tamano_archivo2:
-        print(f"El archivo '{archivo1}' es más grande que el archivo '{archivo2}'")
+def compare_files(file1, file2):
+    with open(file1, 'rb') as a1, open(file2, 'rb') as a2:
+        c1 = a1.read()
+        c2 = a2.read()
+    if c1 == c2:
+        print("ok")
     else:
-        print(f"El archivo '{archivo1}' tiene el mismo tamaño que el archivo '{archivo2}'")
+        print("nok")
 
-# Ejemplo de uso
-comparar_tamano_archivos("archivo1.txt", "archivo2.txt")
+if len(sys.argv) > 2:
+    file1 = sys.argv[1]
+    file2 = sys.argv[2]
+    compare_files(file1, file2)
+else:
+    print('Debe proporcionar dos filepaths como argumentos.')
+    sys.exit(1)
