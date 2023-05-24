@@ -7,39 +7,43 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-def claves_menores(diccionario,k):
-    valores_mas_pequenos = Node.heapq.nsmallest(k, diccionario.items(), key=lambda x: x[1])
-    return valores_mas_pequenos
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.is_end_of_word = False
 
-def separador(text, words,m):
-    pattern = r'({})'.format('|'.join(map(re.escape, words)))
-    parts = re.split(pattern, text)
-    parts_clean = [part.strip() for part in parts if part.strip()]
-    pares = []
-    for i in range(0, len(parts_clean), 2):
-        if i + 1 < len(parts_clean):
-            par = parts_clean[i] + parts_clean[i + 1]
-            pares.append(par)
+def insert_word(root, word):
+    node = root
+    for char in word:
+        if char not in node.children:
+            node.children[char] = TrieNode()
+        node = node.children[char]
+    node.is_end_of_word = True
+
+def separador(cadena, palabras, m):
+    root = TrieNode()
+    for palabra in palabras:
+        insert_word(root, palabra)
+
+    resultado = []
+    inicio = 0
+    node = root
+    match_start = 0
+    for i, char in enumerate(cadena):
+        if char in node.children:
+            node = node.children[char]
+            if node.is_end_of_word:
+                resultado.append(cadena[match_start:i+1])
+                match_start = i+1
+                node = root
         else:
-            pares.append(parts_clean[i])
-    a=len(pares)//m+1
-    if(len(pares)!=a):
-        grupos = [pares[i:i+a] for i in range(0, len(pares), a)]
-    else:
-        grupos=pares
-    ah=[]
-    for grupo in grupos:
-        cadena = ''.join(grupo)
-        ah.append(cadena)
+            node = root
+            match_start = i+1
+    a=len(resultado)//m+1
+    grupos = [resultado[i:i+a] for i in range(0, len(resultado), a)]
+    ah = [''.join(grupo) for grupo in grupos]
+    
     return ah
-
-def obtener_columna(lista, indice_columna):
-    columna = []
-    for fila in lista:
-        if indice_columna < len(fila):
-            columna.append(fila[indice_columna])
-    return columna
-
 if(rank==0):
     start_time = time.time()
     # Leer argumento
@@ -88,13 +92,8 @@ if(rank==0):
 
         Node.heapq.heappush(the_nodes, newNode)
     he = Node.CalculateCodes(the_nodes[0])
-    min_values=claves_menores(the_symbols,size-1)
-    columna = obtener_columna(min_values, 0)
-    listtemp = []
-    for item in columna:
-        if (item in he):
-            listtemp.append(he[item])
-    resultado=separador(huffman_encoding,listtemp,size-1)
+    valores_ordenados = sorted(he.values(), key=len, reverse=True)
+    resultado=separador(huffman_encoding,valores_ordenados,size-1)
     iu=[]
 
     b={}
